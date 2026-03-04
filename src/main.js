@@ -37,7 +37,11 @@ map.on('locationfound', function (e) {
 
 document.getElementById('userLocation').addEventListener('click', () => {
     loading.style.display = 'flex';
-    let marker = null;
+    //rensa marker från sökt plats  
+    map.removeLayer(marker);
+    marker = null;
+    map.closePopup();
+
     map.locate({
         setView: true,
         maxZoom: 14,
