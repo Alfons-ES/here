@@ -1,0 +1,38 @@
+body {
+    background-color: green;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    p {
+        color: black;
+    }
+}
+
+#map {
+    width: 100vw;
+    height: 100vh;
+}
+
+#inputLocation {
+    position: fixed;
+    right: 40vw;
+    top: 1vh;
+    width: 20vw;
+    z-index: 1000;
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid gray;
+}
+
+#userLocation {
+    z-index: 1000;
+    top: 2vh;
+    right: 2vh;
+    position: fixed;
+    margin: 0;
+    padding: 0;
+    width: 2vw;
+    height: 2vw;
+}
