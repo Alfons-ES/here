@@ -5,12 +5,14 @@ var map = L.map('map');
 let marker = null;
 let userMarker = null;
 
+const popup = document.getElementById('popup')
+
 //var är vi?
 map.locate({
     setView: true,
     maxZoom: 14,
     enableHighAccuracy: true,
-    watch: true
+
 });
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -23,7 +25,7 @@ map.on('locationfound', function (e) {
     loading.style.display = 'none';
     const latlng = e.latlng;
     const userIcon = L.icon({
-        iconUrl: '../public/here.png',
+        iconUrl: '/here.png',
         iconSize: [38, 38]
     })
     if (userMarker) {
@@ -38,14 +40,16 @@ map.on('locationfound', function (e) {
 document.getElementById('userLocation').addEventListener('click', () => {
     loading.style.display = 'flex';
     //rensa marker från sökt plats  
-    map.removeLayer(marker);
-    marker = null;
-    map.closePopup();
-
+    if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+    }
+    popup.style.display = 'none';
     map.locate({
         setView: true,
         maxZoom: 14,
         enableHighAccuracy: true,
+
     });
 });
 /**
@@ -66,8 +70,19 @@ async function findLocation(location) {
 
             marker = L.marker([latitude, longitude])
                 .addTo(map)
-                .bindPopup(`<b>${data[0].display_name}</b>`)
-                .openPopup();
+            //.bindPopup(`<b>${data[0].display_name}</b>`)
+            //.openPopup();
+            console.log(data[0])
+
+            popup.style.display = 'block';
+            popup.innerHTML = `
+            <button id="closePopup"><b>✖</b></button>
+            <h1>${data[0].name}</h1>
+            <p>${data[0].display_name}</p>
+            <p>${data[0].addresstype}</p>
+            `
+
+
         } else {
             alert('Hittade inte platsen, var mer specifik!');
         }
@@ -76,6 +91,10 @@ async function findLocation(location) {
     }
 }
 
+
+document.getElementById('popup').addEventListener('click', () => {
+    popup.style.display = 'none';
+});
 
 document.getElementById('inputLocation').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {

@@ -33,6 +33,9 @@ body {
     position: fixed;
     margin: 0;
     padding: 0;
-    width: 2vw;
-    height: 2vw;
+    width: 32px;
+    height: 32px;
+    background-color: white;
+    border: 1px solid gray;
+    border-radius: 4px;
 }
