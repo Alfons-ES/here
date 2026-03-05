@@ -65,16 +65,16 @@ document.getElementById('viewAll').addEventListener('click', () => {
         viewAll = true
     }
 
-    //rensa marker från sökt plats  
-    if (marker) {
-        map.removeLayer(marker);
-        marker = null;
+    //
+    if (!marker) {
+        map.locate({
+            enableHighAccuracy: true,
+        });
+    } else {
+        findFL(marker._latlng.lat, marker._latlng.lng);
     }
     popup.classList.remove('visible');
-    map.locate({
-        enableHighAccuracy: true,
 
-    });
 });
 /**
  * tar vad användaren sökt på, kör nominatim med flNameet för att hitta platsen - använder nomanitams angivna latitude och longitude för att ställa kartan på den platsen.
@@ -97,7 +97,7 @@ async function findLocation(location) {
             //.bindPopup(`<b>${data[0].display_name}</b>`)
             //.openPopup();
             console.log(data[0])
-
+            console.log(marker)
             popup.classList.add('visible');;
             popup.innerHTML = `
             <button id="closePopup"><b>✖</b></button>
@@ -176,13 +176,14 @@ function findFL(lat, lng) {
                                 ? descValue["@value"]
                                 : "";
 
-                        // Kolla om det handlar om synlighet
+                        // Kolla synlighet
                         if (descText.includes("Synlig ovan mark") ||
                             descText.includes("Synlig ovan jord") ||
                             descText === "Synlig ovan mark") {
                             synlig = true;
                         }
                     }
+
                 }
                 if (synlig === false && viewAll === false) {
                     return;
@@ -211,7 +212,7 @@ function findFL(lat, lng) {
                 });
                 let center = [sumLat / coords.length, sumLon / coords.length];
 
-                // flNameet på fornlämningen
+                // namnet på fornlämningen
                 let flName = ""
                 for (let node of graph) {
                     if (node["ksam:name"]) {
@@ -219,40 +220,66 @@ function findFL(lat, lng) {
                         break;
                     }
                 }
-                console.log(flName)
+                //console.log(flName)
 
-                let icon = "?"
-                if (flName === "Stensättning" || flName === "Hägnad" || flName === "Röjningsröse" || flName === "Röse") {
-                    icon = "🪨"
+                //beskrivning av fornlämningen
+                let flDesc = ""
+                for (let node of graph) {
+                    if (node["ksam:desc"]) {
+                        let tempDesc = node["ksam:desc"]["@value"]
+                        if (tempDesc.includes("Beskrivningen är inte") || tempDesc.includes("Okänd")) {
+                            flDesc = "Platsen är ej undersökt."
+                        }
+                        else {
+                            flDesc = tempDesc
+                        }
+                        break;
+                    }
                 }
-                if (flName === "Gravfält") {
-                    icon = "💀"
-                }
-                if (flName === "Hög") {
-                    icon = "⛰️"
-                }
-                if (flName === "Boplats" || flName === "Lägenhetsbebyggelse" || flName === "Bytomt/gårdstomt" || flName === "Grav- och boplatsområde" || flName === "Boplatsområde") {
-                    icon = "🛖"
-                }
-                if (flName === "Fossil åker" || flName === "Fossilåker") {
-                    icon = "🦴"
-                }
-                if (flName === "Gränsmärke") {
-                    icon = "🔺"
-                }
-                if (flName === "Färdväg") {
-                    icon = "🛣️"
-                }
-                if (flName === "Hällristning") {
-                    icon = "🎨"
-                }
+                //console.log(flDesc)
 
+                let icon = "❔"
+                if (flDesc != "Platsen är ej undersökt.") {
+                    if (flName === "Stensättning" || flName === "Hägnad" || flName === "Röjningsröse" || flName === "Röse") {
+                        icon = "🪨"
+                    }
+                    else if (flName === "Gravfält") {
+                        icon = "💀"
+                    }
+                    else if (flName === "Hög") {
+                        icon = "⛰️"
+                    }
+                    else if (flName === "Boplats" || flName === "Lägenhetsbebyggelse" || flName === "Bytomt/gårdstomt" || flName === "Grav- och boplatsområde" || flName === "Boplatsområde") {
+                        icon = "🛖"
+                    }
+                    else if (flName === "Fossil åker" || flName === "Fossilåker") {
+                        icon = "🦴"
+                    }
+                    else if (flName === "Gränsmärke") {
+                        icon = "🛆"
+                    }
+                    else if (flName === "Färdväg") {
+                        icon = "🛣️"
+                    }
+                    else if (flName === "Hällristning" || flName === "Runristning") {
+                        icon = "🎨"
+                    }
+                    else if (flName === "Fartygs-/båtlämning" || flName === "") {
+                        icon = "🛥️"
+                    }
+                    else if (flName === "Kyrka" || flName === "Kyrka/kapell") {
+                        icon = "⛪"
+                    }
+                    else {
+                        icon = "❗"
+                    }
+                }
                 // gör flMarker
                 let flMarker = L.marker(center, {
                     icon: L.divIcon({
                         html: icon,
                         className: 'flmarker',
-                        iconSize: [30, 30]
+                        iconSize: [26, 26]
                     })
                 }).addTo(map);
 
@@ -261,7 +288,7 @@ function findFL(lat, lng) {
                     popup.innerHTML = `
                     <button id="closePopup"><b>✖</b></button>
                     <h1>${flName}</h1>
-                    <p></p>
+                    <p>${flDesc}</p>
                     <p id="coordinater">${center[0]}, ${center[1]}</p>
                 `;
 
@@ -273,5 +300,6 @@ function findFL(lat, lng) {
 
         })
         .catch(error => console.log(error));
+    loading.style.display = 'none';
 }
 
