@@ -14,7 +14,7 @@ let viewAll = false;
 //var är vi?
 map.locate({
     setView: true,
-    maxZoom: 14,
+    maxZoom: 12,
     enableHighAccuracy: true,
 
 });
@@ -52,12 +52,12 @@ document.getElementById('userLocation').addEventListener('click', () => {
     popup.classList.remove('visible');
     map.locate({
         setView: true,
-        maxZoom: 14,
+        maxZoom: 19,
         enableHighAccuracy: true,
 
     });
 });
-
+/*
 document.getElementById('viewAll').addEventListener('click', () => {
     loading.style.display = 'flex';
     if (viewAll) {
@@ -65,18 +65,16 @@ document.getElementById('viewAll').addEventListener('click', () => {
     } else {
         viewAll = true
     }
-
     //
     if (!marker) {
-        map.locate({
-            enableHighAccuracy: true,
-        });
+        findFL(userMarker._latlng.lat, userMarker._latlng.lng)
     } else {
         findFL(marker._latlng.lat, marker._latlng.lng);
     }
     popup.classList.remove('visible');
 
 });
+*/
 /**
  * tar vad användaren sökt på, kör nominatim med flNameet för att hitta platsen - använder nomanitams angivna latitude och longitude för att ställa kartan på den platsen.
  * @param {*} location - användarens sökning
@@ -103,8 +101,9 @@ async function findLocation(location) {
             popup.innerHTML = `
             <button id="closePopup" onclick="closePopup()"><b>✖</b></button>
             <h1>${data[0].name}</h1>
-            <p>${data[0].display_name}</p>
-            <p>${data[0].addresstype}</p>
+            <ul>
+            <li>${data[0].display_name} - ${data[0].addresstype}</li>
+            </ul>
             `
             findFL(latitude, longitude)
         } else {
@@ -143,8 +142,9 @@ async function findUserLocation(lat, lng) {
         popup.innerHTML = `
             <button id="closePopup" onclick="closePopup()"><b>✖</b></button>
             <h1>${data.name}</h1>
-            <p>${data.display_name}</p>
-            <p>${data.addresstype}</p>
+            <ul>
+            <li>${data.display_name} - ${data.addresstype}</li>
+            </ul>
             `
     } catch (error) {
         console.error('Error fetching location:', error);
@@ -201,8 +201,8 @@ function findFL(lat, lng) {
 
                         // Kolla synlighet
                         if (descText.includes("Synlig ovan mark") ||
-                            descText.includes("Synlig ovan jord") ||
-                            descText === "Synlig ovan mark") {
+                            descText.includes("Synlig ovan jord")
+                        ) {
                             synlig = true;
                         }
                     }
@@ -252,11 +252,13 @@ function findFL(lat, lng) {
                     if (node["ksam:desc"]) {
                         let tempDesc = node["ksam:desc"]["@value"] || node["ksam:desc"] || "";
 
-                        if (tempDesc.trim() === "" ||
+                        if (
                             tempDesc.includes("Beskrivningen är inte") ||
                             tempDesc.includes("Okänd")) {
-                            // hoppa över
-                            continue;
+                            if (!viewAll) {
+                                // hoppa över
+                                continue;
+                            }
                         }
 
                         flDesc += "<li>" + tempDesc + "</li>"

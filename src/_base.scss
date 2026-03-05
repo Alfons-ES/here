@@ -65,13 +65,29 @@ body {
     #viewAll:hover {
         background-color: rgb(230, 230, 230);
     }
+
+    #viewAllImg {
+        object-fit: contain;
+        width: 80%;
+    }
 }
-
-
-
 
 .flmarker {
     text-shadow: rgb(132, 0, 127) 0px 0px 5px;
     font-size: 19px;
     color: rgb(225, 255, 0);
+}
+
+footer {
+    font-size: 14px;
+    z-index: 1400;
+    position: fixed;
+    bottom: -12px;
+    left: 2px;
+
+    p {
+        background-color: white;
+        padding: 1px 1px 0 1px;
+        color: rgb(0, 0, 0);
+    }
 }

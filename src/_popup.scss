@@ -30,12 +30,13 @@
     h1 {
 
         font-size: 20px;
-        margin-left: 5px;
+        margin-left: 15px;
     }
 
     p {
         margin: 10px 0 0 5px;
         width: 80%;
+        color: rgb(57, 57, 57);
     }
 
     #coordinater {
@@ -44,7 +45,7 @@
     }
 
     a {
-        margin: 0 0 5px 5px;
+        margin: 0 5px 5px 5px;
         text-decoration: none;
         color: rgb(77, 77, 77);
     }
@@ -55,9 +56,15 @@
 
     li {
         margin: 0 5px;
+        color: rgb(56, 56, 56);
+
     }
 
     ul {
-        margin: 0;
+        padding-top: 5px;
+        list-style-type: circle;
+        margin: 0 0 5px 0;
+        border-top: 1px solid rgb(190, 190, 190);
+        border-radius: 25px;
     }
 }

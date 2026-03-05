@@ -27,13 +27,19 @@
           </picture>
         </button>
         <button id="viewAll">
-          <p>👁️</p>
+          <picture>
+            <source srcset="./eyeopen.webp" type="image/webp">
+            <img src="./eyeopen.png" alt="Jag" id="viewAllImg" width="100%" height="100%">
+          </picture>
         </button>
       </div>
-      <input id="inputLocation" placeholder="Sök...">
+      <input id="inputLocation" type="search" placeholder="Sök..." results>
       <div id="map"></div>
       <div id="popup"></div>
     </div>
+    <footer>
+      <p>Alfons Eriksson Sveiven</p>
+    </footer>
   </div>
   <script type="module" src="/src/main.js"></script>
   <script>
