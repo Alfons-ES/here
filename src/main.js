@@ -10,6 +10,7 @@ const popup = document.getElementById('popup')
 let viewAll = false;
 
 
+
 //var är vi?
 map.locate({
     setView: true,
@@ -100,7 +101,7 @@ async function findLocation(location) {
             console.log(marker)
             popup.classList.add('visible');;
             popup.innerHTML = `
-            <button id="closePopup"><b>✖</b></button>
+            <button id="closePopup" onclick="closePopup()"><b>✖</b></button>
             <h1>${data[0].name}</h1>
             <p>${data[0].display_name}</p>
             <p>${data[0].addresstype}</p>
@@ -114,11 +115,6 @@ async function findLocation(location) {
     }
 }
 
-
-document.getElementById('popup').addEventListener('click', () => {
-    popup.classList.remove('visible');
-});
-
 document.getElementById('inputLocation').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
         e.preventDefault();
@@ -127,11 +123,38 @@ document.getElementById('inputLocation').addEventListener('keypress', function (
     }
 });
 
+//onclick på kartan
+map.on("click", function (e) {
+    if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+    }
+    marker = new L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+    findFL(e.latlng.lat, e.latlng.lng);
+    findUserLocation(e.latlng.lat, e.latlng.lng);
+});
+
+async function findUserLocation(lat, lng) {
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
+        const data = await response.json();
+
+        popup.classList.add('visible');;
+        popup.innerHTML = `
+            <button id="closePopup" onclick="closePopup()"><b>✖</b></button>
+            <h1>${data.name}</h1>
+            <p>${data.display_name}</p>
+            <p>${data.addresstype}</p>
+            `
+    } catch (error) {
+        console.error('Error fetching location:', error);
+    }
+
+}
 
 function findFL(lat, lng) {
 
-
-    //definiera området runt
+    //definiera området runt (boundingbox)
     const north = lat + 0.045;
     const west = lng - 0.088;
     const south = lat - 0.090;
@@ -237,7 +260,6 @@ function findFL(lat, lng) {
                         }
 
                         flDesc += "<li>" + tempDesc + "</li>"
-                        flDesc += "<br>"
                     }
                 }
 
@@ -250,13 +272,13 @@ function findFL(lat, lng) {
                 }
 
                 // fallback om ingen bra beskrivning hittades
-                if (flDesc === "<li></li><br>" || flDesc === "<li>Synlig ovan mark</li><br>") {
+                if (flDesc === "<li></li>" || flDesc === "<li>Synlig ovan mark</li>") {
                     flDesc = "Platsen är ej undersökt eller saknar beskrivning.";
                 }
                 //console.log(flDesc)
 
                 let icon = "?"
-                if (flDesc != "Platsen är ej undersökt") {
+                if (flDesc != "Platsen är ej undersökt eller saknar beskrivning.") {
                     if (flName === "Stensättning" || flName === "Hägnad" || flName === "Röjningsröse" || flName === "Röse") {
                         icon = "🪨"
                     }
@@ -303,7 +325,7 @@ function findFL(lat, lng) {
                 flMarker.on('click', function () {
                     popup.classList.add('visible');
                     popup.innerHTML = `
-                    <button id="closePopup"><b>✖</b></button>
+                    <button id="closePopup" onclick="closePopup()"><b>✖</b></button>
                     <h1>${flName}</h1>
                     <ul>${flDesc}</ul>
                     <a href="${flUrl}" target="_blank">länk</a>
