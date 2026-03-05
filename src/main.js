@@ -34,7 +34,7 @@ map.on('locationfound', function (e) {
         userMarker = L.marker(latlng, { icon: userIcon })
             .addTo(map)
     }
-    findFL();
+    findFL(latlng);
 
 });
 
@@ -45,7 +45,7 @@ document.getElementById('userLocation').addEventListener('click', () => {
         map.removeLayer(marker);
         marker = null;
     }
-    popup.style.display = 'none';
+    popup.classList.remove('visible');
     map.locate({
         setView: true,
         maxZoom: 14,
@@ -75,7 +75,7 @@ async function findLocation(location) {
             //.openPopup();
             console.log(data[0])
 
-            popup.style.display = 'block';
+            popup.classList.add('visible');;
             popup.innerHTML = `
             <button id="closePopup"><b>✖</b></button>
             <h1>${data[0].name}</h1>
@@ -92,7 +92,7 @@ async function findLocation(location) {
 
 
 document.getElementById('popup').addEventListener('click', () => {
-    popup.style.display = 'none';
+    popup.classList.remove('visible');
 });
 
 document.getElementById('inputLocation').addEventListener('keypress', function (e) {
@@ -104,7 +104,9 @@ document.getElementById('inputLocation').addEventListener('keypress', function (
 });
 
 
-function findFL() {
+function findFL(latlng) {
+
+    console.log(latlng)
     fetch("https://kulturarvsdata.se/ksamsok/api?method=search&hitsPerPage=25&query=boundingBox=/WGS84%20%2214.901%2059.259%2014.991%2059.349%22%20AND%20text=fornlämning", {
         headers: { 'Accept': 'application/json' }
     })
@@ -112,9 +114,6 @@ function findFL() {
         .then(data => {
             console.log(data)
 
-            if (window.flMarkers) {
-                window.flMarkers.forEach(m => map.removeLayer(m));
-            }
             window.flMarkers = [];
 
             let records = data.result.records || [];
@@ -122,7 +121,7 @@ function findFL() {
             records.forEach((rec, i) => {
                 let graph = rec.record["@graph"] || [];
 
-
+                // leta efter koordinater
                 let coordsValue;
                 for (let node of graph) {
                     if (node["ksam:coordinates"]) {
@@ -131,11 +130,12 @@ function findFL() {
                     }
                 }
 
+                if (!coordsValue) {
+                    return;
+                } // hoppa över fornlämningen om det saknas coordinater
 
                 // ta strängen 
                 let xml = coordsValue["@value"];
-
-
                 // plocka ut alla nummer-par med regex (lon,lat)
                 let coords = [];
                 let regex = /([\d.]+),([\d.]+)/g;
@@ -143,10 +143,10 @@ function findFL() {
                 while (match = regex.exec(xml)) {
                     let lon = parseFloat(match[1]);
                     let lat = parseFloat(match[2]);
-                    coords.push([lat, lon]); // leaflet vill ha lat först
+                    coords.push([lat, lon]);
                 }
 
-                //medelpunkt
+                // medelpunkt
                 let sumLat = 0, sumLon = 0;
                 coords.forEach(c => {
                     sumLat += c[0];
@@ -154,21 +154,37 @@ function findFL() {
                 });
                 let center = [sumLat / coords.length, sumLon / coords.length];
 
+                // namnet på fornlämningen
+                let namn = ""
+                for (let node of graph) {
+                    if (node["ksam:name"]) {
+                        namn = node["ksam:name"]["@value"]
+                        break;
+                    }
+                }
 
-                // gör prick
-                let prick = L.marker(center, {
+                // gör flMarker
+                let flMarker = L.marker(center, {
                     icon: L.divIcon({
-                        html: '<p>X</p>',
+                        html: "✖",
                         className: "",
-                        iconSize: [20, 20],
-                        iconAnchor: [10, 10]
+                        iconSize: [20, 20]
                     })
                 }).addTo(map);
 
+                flMarker.on('click', function () {
+                    popup.classList.add('visible');
+                    popup.innerHTML = `
+                    <button id="closePopup"><b>✖</b></button>
+                    <h1>${namn}</h1>
+                    <p></p>
+                    <p id="coordinater">${center[0]}, ${center[1]}</p>
+                `;
 
+                });
 
                 window.flMarkers = window.flMarkers || [];
-                window.flMarkers.push(prick);
+                window.flMarkers.push(flMarker);
             });
 
         })

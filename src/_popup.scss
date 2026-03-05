@@ -1,5 +1,5 @@
 #popup {
-    display: none;
+    display: block;
     z-index: 1500;
     position: fixed;
     bottom: 0;
@@ -8,6 +8,12 @@
     width: 100%;
     border-top-left-radius: 25px;
     border-top-right-radius: 25px;
+    transition: transform 0.4s linear;
+    transform: translateY(100%);
+
+    &.visible {
+        transform: translateY(0);
+    }
 
     #closePopup {
         z-index: 1501;
@@ -30,4 +36,10 @@
         margin: 0 0 5px 5px;
         width: 80%;
     }
+
+    #coordinater {
+        font-style: italic;
+        font-size: 10px;
+    }
+
 }
