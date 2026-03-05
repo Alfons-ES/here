@@ -37,7 +37,7 @@ map.on('locationfound', function (e) {
         userMarker = L.marker(latlng, { icon: userIcon })
             .addTo(map)
     }
-    findFL(latlng);
+    findFL(latlng.lat, latlng.lng);
 
 });
 
@@ -105,6 +105,7 @@ async function findLocation(location) {
             <p>${data[0].display_name}</p>
             <p>${data[0].addresstype}</p>
             `
+            findFL(latitude, longitude)
         } else {
             alert('Hittade inte platsen, var mer specifik!');
         }
@@ -127,9 +128,8 @@ document.getElementById('inputLocation').addEventListener('keypress', function (
 });
 
 
-function findFL(latlng) {
-    const lat = latlng.lat;
-    const lng = latlng.lng;
+function findFL(lat, lng) {
+
 
     //definiera området runt
     const north = lat + 0.045;
@@ -221,8 +221,8 @@ function findFL(latlng) {
                 }
                 console.log(flName)
 
-                let icon = "✖"
-                if (flName === "Stensättning" || flName === "Hägnad") {
+                let icon = "?"
+                if (flName === "Stensättning" || flName === "Hägnad" || flName === "Röjningsröse" || flName === "Röse") {
                     icon = "🪨"
                 }
                 if (flName === "Gravfält") {
@@ -231,11 +231,20 @@ function findFL(latlng) {
                 if (flName === "Hög") {
                     icon = "⛰️"
                 }
-                if (flName === "Boplats" || flName === "Lägenhetsbebyggelse" || flName === "Bytomt/gårdstomt") {
+                if (flName === "Boplats" || flName === "Lägenhetsbebyggelse" || flName === "Bytomt/gårdstomt" || flName === "Grav- och boplatsområde" || flName === "Boplatsområde") {
                     icon = "🛖"
                 }
                 if (flName === "Fossil åker" || flName === "Fossilåker") {
                     icon = "🦴"
+                }
+                if (flName === "Gränsmärke") {
+                    icon = "🔺"
+                }
+                if (flName === "Färdväg") {
+                    icon = "🛣️"
+                }
+                if (flName === "Hällristning") {
+                    icon = "🎨"
                 }
 
                 // gör flMarker
