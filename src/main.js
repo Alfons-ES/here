@@ -26,7 +26,6 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 //hittat vart avnänderan befinner sig, sätt ut markör för var vi är, kalla fornlämnings findern
 map.on('locationfound', function (e) {
-    loading.style.display = 'none';
     const latlng = e.latlng;
     const userIcon = L.icon({
         iconUrl: '/here.png',
@@ -124,6 +123,7 @@ document.getElementById('inputLocation').addEventListener('keypress', function (
 
 //onclick på kartan
 map.on("click", function (e) {
+    loading.style.display = 'flex';
     if (marker) {
         map.removeLayer(marker);
         marker = null;
@@ -338,10 +338,11 @@ function findFL(lat, lng) {
 
                 window.flMarkers = window.flMarkers || [];
                 window.flMarkers.push(flMarker);
+                loading.style.display = 'none';
             });
 
         })
         .catch(error => console.log(error));
-    loading.style.display = 'none';
+
 }
 
