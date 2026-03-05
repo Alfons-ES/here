@@ -238,8 +238,8 @@ function findFL(lat, lng) {
                 }
                 //console.log(flDesc)
 
-                let icon = "❔"
-                if (flDesc != "Platsen är ej undersökt.") {
+                let icon = "?"
+                if (flDesc != "Platsen är ej undersökt") {
                     if (flName === "Stensättning" || flName === "Hägnad" || flName === "Röjningsröse" || flName === "Röse") {
                         icon = "🪨"
                     }
@@ -256,7 +256,7 @@ function findFL(lat, lng) {
                         icon = "🦴"
                     }
                     else if (flName === "Gränsmärke") {
-                        icon = "🛆"
+                        icon = "🔺"
                     }
                     else if (flName === "Färdväg") {
                         icon = "🛣️"
