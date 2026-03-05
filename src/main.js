@@ -7,6 +7,9 @@ let userMarker = null;
 
 const popup = document.getElementById('popup')
 
+let viewAll = false;
+
+
 //var är vi?
 map.locate({
     setView: true,
@@ -53,8 +56,28 @@ document.getElementById('userLocation').addEventListener('click', () => {
 
     });
 });
+
+document.getElementById('viewAll').addEventListener('click', () => {
+    loading.style.display = 'flex';
+    if (viewAll) {
+        viewAll = false
+    } else {
+        viewAll = true
+    }
+
+    //rensa marker från sökt plats  
+    if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+    }
+    popup.classList.remove('visible');
+    map.locate({
+        enableHighAccuracy: true,
+
+    });
+});
 /**
- * tar vad användaren sökt på, kör nominatim med namnet för att hitta platsen - använder nomanitams angivna latitude och longitude för att ställa kartan på den platsen.
+ * tar vad användaren sökt på, kör nominatim med flNameet för att hitta platsen - använder nomanitams angivna latitude och longitude för att ställa kartan på den platsen.
  * @param {*} location - användarens sökning
  */
 async function findLocation(location) {
@@ -105,15 +128,28 @@ document.getElementById('inputLocation').addEventListener('keypress', function (
 
 
 function findFL(latlng) {
+    const lat = latlng.lat;
+    const lng = latlng.lng;
 
-    console.log(latlng)
-    fetch("https://kulturarvsdata.se/ksamsok/api?method=search&hitsPerPage=25&query=boundingBox=/WGS84%20%2214.901%2059.259%2014.991%2059.349%22%20AND%20text=fornlämning", {
+    //definiera området runt
+    const north = lat + 0.045;
+    const west = lng - 0.088;
+    const south = lat - 0.090;
+    const east = lng + 0.088;
+
+    const boundingbox = `"${west} ${south} ${east} ${north}"`;
+    const boundingboxEncoded = encodeURIComponent(`/WGS84 ${boundingbox}`);
+
+    fetch(`https://kulturarvsdata.se/ksamsok/api?method=search&hitsPerPage=99&query=boundingBox=${boundingboxEncoded} AND text=fornlämning`, {
         headers: { 'Accept': 'application/json' }
     })
         .then(resp => resp.json())
         .then(data => {
             console.log(data)
 
+            if (window.flMarkers) {
+                window.flMarkers.forEach(m => map.removeLayer(m));
+            }
             window.flMarkers = [];
 
             let records = data.result.records || [];
@@ -121,15 +157,36 @@ function findFL(latlng) {
             records.forEach((rec, i) => {
                 let graph = rec.record["@graph"] || [];
 
-                // leta efter koordinater
+                // leta efter koordinater och om det är synligt ovan jord
                 let coordsValue;
+                let synlig = false;
+
                 for (let node of graph) {
                     if (node["ksam:coordinates"]) {
                         coordsValue = node["ksam:coordinates"];
-                        break;
+
+                    }
+                    if (node["ksam:desc"]) {
+                        let descValue = node["ksam:desc"];
+
+                        // Hantera både sträng och { @value: "..." }
+                        let descText = (typeof descValue === "string")
+                            ? descValue
+                            : (descValue && descValue["@value"])
+                                ? descValue["@value"]
+                                : "";
+
+                        // Kolla om det handlar om synlighet
+                        if (descText.includes("Synlig ovan mark") ||
+                            descText.includes("Synlig ovan jord") ||
+                            descText === "Synlig ovan mark") {
+                            synlig = true;
+                        }
                     }
                 }
-
+                if (synlig === false && viewAll === false) {
+                    return;
+                }
                 if (!coordsValue) {
                     return;
                 } // hoppa över fornlämningen om det saknas coordinater
@@ -154,21 +211,39 @@ function findFL(latlng) {
                 });
                 let center = [sumLat / coords.length, sumLon / coords.length];
 
-                // namnet på fornlämningen
-                let namn = ""
+                // flNameet på fornlämningen
+                let flName = ""
                 for (let node of graph) {
                     if (node["ksam:name"]) {
-                        namn = node["ksam:name"]["@value"]
+                        flName = node["ksam:name"]["@value"]
                         break;
                     }
+                }
+                console.log(flName)
+
+                let icon = "✖"
+                if (flName === "Stensättning" || flName === "Hägnad") {
+                    icon = "🪨"
+                }
+                if (flName === "Gravfält") {
+                    icon = "💀"
+                }
+                if (flName === "Hög") {
+                    icon = "⛰️"
+                }
+                if (flName === "Boplats" || flName === "Lägenhetsbebyggelse" || flName === "Bytomt/gårdstomt") {
+                    icon = "🛖"
+                }
+                if (flName === "Fossil åker" || flName === "Fossilåker") {
+                    icon = "🦴"
                 }
 
                 // gör flMarker
                 let flMarker = L.marker(center, {
                     icon: L.divIcon({
-                        html: "✖",
-                        className: "",
-                        iconSize: [20, 20]
+                        html: icon,
+                        className: 'flmarker',
+                        iconSize: [30, 30]
                     })
                 }).addTo(map);
 
@@ -176,7 +251,7 @@ function findFL(latlng) {
                     popup.classList.add('visible');
                     popup.innerHTML = `
                     <button id="closePopup"><b>✖</b></button>
-                    <h1>${namn}</h1>
+                    <h1>${flName}</h1>
                     <p></p>
                     <p id="coordinater">${center[0]}, ${center[1]}</p>
                 `;
