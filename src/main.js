@@ -169,7 +169,7 @@ function findFL(lat, lng) {
                     if (node["ksam:desc"]) {
                         let descValue = node["ksam:desc"];
 
-                        // Hantera både sträng och { @value: "..." }
+                        // Hantera strängarna
                         let descText = (typeof descValue === "string")
                             ? descValue
                             : (descValue && descValue["@value"])
@@ -223,18 +223,35 @@ function findFL(lat, lng) {
                 //console.log(flName)
 
                 //beskrivning av fornlämningen
-                let flDesc = ""
+                let flDesc = "";
+
                 for (let node of graph) {
                     if (node["ksam:desc"]) {
-                        let tempDesc = node["ksam:desc"]["@value"]
-                        if (tempDesc.includes("Beskrivningen är inte") || tempDesc.includes("Okänd")) {
-                            flDesc = "Platsen är ej undersökt."
+                        let tempDesc = node["ksam:desc"]["@value"] || node["ksam:desc"] || "";
+
+                        if (tempDesc.trim() === "" ||
+                            tempDesc.includes("Beskrivningen är inte") ||
+                            tempDesc.includes("Okänd")) {
+                            // hoppa över
+                            continue;
                         }
-                        else {
-                            flDesc = tempDesc
-                        }
+
+                        flDesc += "<li>" + tempDesc + "</li>"
+                        flDesc += "<br>"
+                    }
+                }
+
+                let flUrl = ""
+                for (let node of graph) {
+                    if (node["ksam:url"]) {
+                        flUrl = node["ksam:url"]
                         break;
                     }
+                }
+
+                // fallback om ingen bra beskrivning hittades
+                if (flDesc === "<li></li><br>" || flDesc === "<li>Synlig ovan mark</li><br>") {
+                    flDesc = "Platsen är ej undersökt eller saknar beskrivning.";
                 }
                 //console.log(flDesc)
 
@@ -288,7 +305,8 @@ function findFL(lat, lng) {
                     popup.innerHTML = `
                     <button id="closePopup"><b>✖</b></button>
                     <h1>${flName}</h1>
-                    <p>${flDesc}</p>
+                    <ul>${flDesc}</ul>
+                    <a href="${flUrl}" target="_blank">länk</a>
                     <p id="coordinater">${center[0]}, ${center[1]}</p>
                 `;
 

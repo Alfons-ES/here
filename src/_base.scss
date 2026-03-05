@@ -47,6 +47,10 @@ body {
         border-top-right-radius: 4px;
     }
 
+    #userLocation:hover {
+        background-color: rgb(230, 230, 230);
+    }
+
     #viewAll {
         margin: 0;
         padding: 0;
@@ -58,7 +62,13 @@ body {
         border-bottom-right-radius: 4px;
     }
 
+    #viewAll:hover {
+        background-color: rgb(230, 230, 230);
+    }
 }
+
+
+
 
 .flmarker {
     text-shadow: rgb(132, 0, 127) 0px 0px 5px;
