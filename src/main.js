@@ -179,6 +179,7 @@ function findFL(lat, lng) {
 
 
             //https://www.w3.org/TR/json-ld11/
+            //https://www.youtube.com/watch?v=0YgJLXgZCj4
             records.forEach((rec, i) => {
                 let graph = rec.record["@graph"] || [];
 
