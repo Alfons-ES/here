@@ -5,6 +5,10 @@ body {
     align-items: center;
     justify-content: center;
 
+    font-family: Arial,
+        Helvetica,
+        sans-serif;
+
     p {
         color: black;
     }
@@ -17,14 +21,23 @@ body {
 
 #inputLocation {
     position: fixed;
-    right: 40vw;
+    right: 43vw;
     top: 1vh;
-    width: 20vw;
+    width: 14vw;
     z-index: 1000;
     padding: 5px;
     border-radius: 4px;
     border: 1px solid gray;
+
+    transition: width 0.3s ease-in-out, right 0.3s ease-in-out;
+
+    &:focus {
+        width: 28vw;
+        right: 36vw;
+        outline: none;
+    }
 }
+
 
 #rightBtns {
     display: flex;
@@ -79,15 +92,36 @@ body {
 }
 
 footer {
-    font-size: 14px;
+    font-size: 13px;
     z-index: 1400;
     position: fixed;
-    bottom: -12px;
-    left: 2px;
+    bottom: -14px;
+    left: 0px;
 
     p {
         background-color: white;
         padding: 1px 1px 0 1px;
-        color: rgb(0, 0, 0);
+        color: rgb(33, 33, 33);
+    }
+}
+
+@media (width >=1000px) {
+    #inputLocation {
+        position: fixed;
+        right: 47vw;
+        top: 1vh;
+        width: 6vw;
+        z-index: 1000;
+        padding: 5px;
+        border-radius: 4px;
+        border: 1px solid gray;
+
+        transition: width 0.3s ease-in-out, right 0.3s ease-in-out;
+
+        &:focus {
+            width: 24vw;
+            right: 38vw;
+            outline: none;
+        }
     }
 }
