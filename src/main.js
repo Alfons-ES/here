@@ -177,6 +177,8 @@ function findFL(lat, lng) {
 
             let records = data.result.records || [];
 
+
+            //https://www.w3.org/TR/json-ld11/
             records.forEach((rec, i) => {
                 let graph = rec.record["@graph"] || [];
 
@@ -192,12 +194,12 @@ function findFL(lat, lng) {
                     if (node["ksam:desc"]) {
                         let descValue = node["ksam:desc"];
 
-                        // Hantera strängarna
-                        let descText = (typeof descValue === "string")
-                            ? descValue
-                            : (descValue && descValue["@value"])
-                                ? descValue["@value"]
-                                : "";
+                        // Se till att det är strings alltid så att includes fungerar
+                        let descText = descValue;
+
+                        if (descValue != null && typeof descValue === "object") {
+                            descText = descValue["@value"];
+                        }
 
                         // Kolla synlighet
                         if (descText.includes("Synlig ovan mark") ||
@@ -226,6 +228,10 @@ function findFL(lat, lng) {
                     let lat = parseFloat(match[2]);
                     coords.push([lat, lon]);
                 }
+
+                //https://stackoverflow.com/questions/23636870/javascript-extract-coordinates-from-a-string
+                //https://stackoverflow.com/questions/5004913/parse-out-all-long-lat-from-a-string
+                //https://stackoverflow.com/questions/52595325/javascript-split-coordinates-from-a-string
 
                 // medelpunkt
                 let sumLat = 0, sumLon = 0;
