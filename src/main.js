@@ -24,6 +24,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 
+
 //hittat vart avnänderan befinner sig, sätt ut markör för var vi är, kalla fornlämnings findern
 map.on('locationfound', function (e) {
     const latlng = e.latlng;
@@ -31,14 +32,12 @@ map.on('locationfound', function (e) {
         iconUrl: '/here.png',
         iconSize: [38, 38]
     })
-    if (userMarker) {
-        userMarker.setLatLng(latlng);
-    } else {
-        userMarker = L.marker(latlng, { icon: userIcon })
-            .addTo(map)
-    }
-    findFL(latlng.lat, latlng.lng);
 
+    userMarker = L.marker(latlng, { icon: userIcon })
+        .addTo(map)
+
+    findFL(latlng.lat, latlng.lng);
+    findUserLocation(latlng.lat, latlng.lng);
 });
 
 document.getElementById('userLocation').addEventListener('click', () => {
@@ -56,15 +55,20 @@ document.getElementById('userLocation').addEventListener('click', () => {
 
     });
 });
-/*
+
 document.getElementById('viewAll').addEventListener('click', () => {
     loading.style.display = 'flex';
     if (viewAll) {
         viewAll = false
+        document.getElementById('viewAllWebp').srcset = "./eyeopen.webp";
+        document.getElementById('viewAllImg').src = "./eyeopen.png";
     } else {
         viewAll = true
+        document.getElementById('viewAllWebp').srcset = "./eyeclosed.webp";
+        document.getElementById('viewAllImg').src = "./eyeclosed.png";
     }
     //
+    console.log(userMarker)
     if (!marker) {
         findFL(userMarker._latlng.lat, userMarker._latlng.lng)
     } else {
@@ -73,7 +77,7 @@ document.getElementById('viewAll').addEventListener('click', () => {
     popup.classList.remove('visible');
 
 });
-*/
+
 /**
  * tar vad användaren sökt på, kör nominatim med flNameet för att hitta platsen - använder nomanitams angivna latitude och longitude för att ställa kartan på den platsen.
  * @param {*} location - användarens sökning
@@ -88,10 +92,16 @@ async function findLocation(location) {
             const latitude = parseFloat(data[0].lat);
             const longitude = parseFloat(data[0].lon);
 
+            const markIcon = L.icon({
+                iconUrl: '/here2.png',
+                iconSize: [38, 38]
+            })
+
             map.setView([latitude, longitude], 12);
 
-            marker = L.marker([latitude, longitude])
+            marker = L.marker([latitude, longitude], { icon: markIcon })
                 .addTo(map)
+
             //.bindPopup(`<b>${data[0].display_name}</b>`)
             //.openPopup();
             console.log(data[0])
@@ -128,7 +138,14 @@ map.on("click", function (e) {
         map.removeLayer(marker);
         marker = null;
     }
-    marker = new L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+    const markIcon = L.icon({
+        iconUrl: '/here2.png',
+        iconSize: [38, 38]
+    })
+
+    marker = L.marker([e.latlng.lat, e.latlng.lng], { icon: markIcon })
+        .addTo(map)
+
     findFL(e.latlng.lat, e.latlng.lng);
     findUserLocation(e.latlng.lat, e.latlng.lng);
 });
@@ -201,19 +218,20 @@ function findFL(lat, lng) {
                         if (descValue != null && typeof descValue === "object") {
                             descText = descValue["@value"];
                         }
-
-                        // Kolla synlighet
-                        if (descText.includes("Synlig ovan mark") ||
-                            descText.includes("Synlig ovan jord")
-                        ) {
-                            synlig = true;
+                        if (viewAll === false) {
+                            // Kolla synlighet
+                            if (descText.includes("Synlig ovan mark") ||
+                                descText.includes("Synlig ovan jord")
+                            ) {
+                                synlig = true;
+                            }
                         }
                     }
 
                 }
                 if (synlig === false && viewAll === false) {
                     return;
-                }
+                } //hoppa över om den inte synns 
                 if (!coordsValue) {
                     return;
                 } // hoppa över fornlämningen om det saknas coordinater
@@ -286,18 +304,18 @@ function findFL(lat, lng) {
                 }
                 //console.log(flDesc)
 
-                let icon = "?"
+                let icon = ""
                 if (flDesc != "Platsen är ej undersökt eller saknar beskrivning.") {
                     if (flName === "Stensättning" || flName === "Hägnad" || flName === "Röjningsröse" || flName === "Röse") {
                         icon = "🪨"
                     }
-                    else if (flName === "Gravfält") {
+                    else if (flName === "Gravfält" || flName === "Grav" || flName === "Grav markerad av sten/block") {
                         icon = "💀"
                     }
                     else if (flName === "Hög") {
                         icon = "⛰️"
                     }
-                    else if (flName === "Boplats" || flName === "Lägenhetsbebyggelse" || flName === "Bytomt/gårdstomt" || flName === "Grav- och boplatsområde" || flName === "Boplatsområde") {
+                    else if (flName === "Boplats" || flName === "Lägenhetsbebyggelse" || flName === "Bytomt/gårdstomt" || flName === "Grav- och boplatsområde" || flName === "Boplatsområde" || flName === "Hammare/smedja") {
                         icon = "🛖"
                     }
                     else if (flName === "Fossil åker" || flName === "Fossilåker") {
