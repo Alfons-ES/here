@@ -57,23 +57,29 @@ document.getElementById('userLocation').addEventListener('click', () => {
 });
 
 document.getElementById('viewAll').addEventListener('click', () => {
-    loading.style.display = 'flex';
+
     if (viewAll) {
+        loading.style.display = 'flex';
         viewAll = false
         document.getElementById('viewAllWebp').srcset = "./eyeopen.webp";
         document.getElementById('viewAllImg').src = "./eyeopen.png";
+        if (!marker) {
+            findFL(userMarker._latlng.lat, userMarker._latlng.lng)
+        } else {
+            findFL(marker._latlng.lat, marker._latlng.lng);
+        }
     } else {
         viewAll = true
         document.getElementById('viewAllWebp').srcset = "./eyeclosed.webp";
         document.getElementById('viewAllImg').src = "./eyeclosed.png";
+
+        if (window.flMarkers) {
+            window.flMarkers.forEach(m => map.removeLayer(m));
+        }
+        window.flMarkers = [];
     }
-    //
-    console.log(userMarker)
-    if (!marker) {
-        findFL(userMarker._latlng.lat, userMarker._latlng.lng)
-    } else {
-        findFL(marker._latlng.lat, marker._latlng.lng);
-    }
+
+
     popup.classList.remove('visible');
 
 });
@@ -120,6 +126,7 @@ async function findLocation(location) {
         }
     } catch (error) {
         console.error('Error fetching location:', error);
+        loading.style.display = 'none';
     }
 }
 
@@ -165,6 +172,7 @@ async function findUserLocation(lat, lng) {
             `
     } catch (error) {
         console.error('Error fetching location:', error);
+        loading.style.display = 'none';
     }
 
 }
@@ -172,15 +180,15 @@ async function findUserLocation(lat, lng) {
 function findFL(lat, lng) {
 
     //definiera området runt (boundingbox)
-    const north = lat + 0.045;
-    const west = lng - 0.088;
-    const south = lat - 0.090;
-    const east = lng + 0.088;
+    const north = lat + 0.025;
+    const west = lng - 0.05;
+    const south = lat - 0.025;
+    const east = lng + 0.05;
 
     const boundingbox = `"${west} ${south} ${east} ${north}"`;
     const boundingboxEncoded = encodeURIComponent(`/WGS84 ${boundingbox}`);
 
-    fetch(`https://kulturarvsdata.se/ksamsok/api?method=search&hitsPerPage=99&query=boundingBox=${boundingboxEncoded} AND text=fornlämning`, {
+    fetch(`https://kulturarvsdata.se/ksamsok/api?method=search&hitsPerPage=10000&query=boundingBox=${boundingboxEncoded} AND text=fornlämning`, {
         headers: { 'Accept': 'application/json' }
     })
         .then(resp => resp.json())
@@ -202,7 +210,7 @@ function findFL(lat, lng) {
 
                 // leta efter koordinater och om det är synligt ovan jord
                 let coordsValue;
-                let synlig = false;
+
 
                 for (let node of graph) {
                     if (node["ksam:coordinates"]) {
@@ -218,20 +226,11 @@ function findFL(lat, lng) {
                         if (descValue != null && typeof descValue === "object") {
                             descText = descValue["@value"];
                         }
-                        if (viewAll === false) {
-                            // Kolla synlighet
-                            if (descText.includes("Synlig ovan mark") ||
-                                descText.includes("Synlig ovan jord")
-                            ) {
-                                synlig = true;
-                            }
-                        }
+
                     }
 
                 }
-                if (synlig === false && viewAll === false) {
-                    return;
-                } //hoppa över om den inte synns 
+
                 if (!coordsValue) {
                     return;
                 } // hoppa över fornlämningen om det saknas coordinater
@@ -277,14 +276,7 @@ function findFL(lat, lng) {
                     if (node["ksam:desc"]) {
                         let tempDesc = node["ksam:desc"]["@value"] || node["ksam:desc"] || "";
 
-                        if (
-                            tempDesc.includes("Beskrivningen är inte") ||
-                            tempDesc.includes("Okänd")) {
-                            if (!viewAll) {
-                                // hoppa över
-                                continue;
-                            }
-                        }
+
 
                         flDesc += "<li>" + tempDesc + "</li>"
                     }
@@ -304,7 +296,8 @@ function findFL(lat, lng) {
                 }
                 //console.log(flDesc)
 
-                let icon = ""
+                let icon = "?"
+
                 if (flDesc != "Platsen är ej undersökt eller saknar beskrivning.") {
                     if (flName === "Stensättning" || flName === "Hägnad" || flName === "Röjningsröse" || flName === "Röse") {
                         icon = "🪨"
@@ -368,6 +361,6 @@ function findFL(lat, lng) {
 
         })
         .catch(error => console.log(error));
-
+    loading.style.display = 'none';
 }
 
