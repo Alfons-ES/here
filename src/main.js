@@ -225,7 +225,7 @@ function findFL(lat, lng) {
     fetch(`https://kulturarvsdata.se/ksamsok/api?method=search&hitsPerPage=10000&query=boundingBox=${boundingboxEncoded} AND text=fornlämning`, {
         headers: { 'Accept': 'application/json' }
     })
-        .then(resp => resp.json())
+        .then(response => response.json())
         .then(data => {
             console.log(data)
 
