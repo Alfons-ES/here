@@ -10,7 +10,6 @@ const popup = document.getElementById('popup')
 let viewAll = false;
 
 
-
 //var är vi?
 map.locate({
     setView: true,
@@ -25,7 +24,10 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 
 
-//hittat vart avnänderan befinner sig, sätt ut markör för var vi är, kalla fornlämnings findern
+/**
+ * hittat vart avnänderan befinner sig, sätt ut markör för var vi är, kalla fornlämnings findern och hämtar adressinformation
+ * @param {*} e.latlng - användarens latitude och longitude
+ */
 map.on('locationfound', function (e) {
     const latlng = e.latlng;
     const userIcon = L.icon({
@@ -40,6 +42,11 @@ map.on('locationfound', function (e) {
     findUserLocation(latlng.lat, latlng.lng);
 });
 
+
+/**
+ * userLocation knappen, gröna knappen längst upp till höger. Ladda, tar bort sök/klickmarkörer, dölj popup, Hitta användarens position och centrera där
+ * 
+ */
 document.getElementById('userLocation').addEventListener('click', () => {
     loading.style.display = 'flex';
     //rensa marker från sökt plats  
@@ -56,6 +63,9 @@ document.getElementById('userLocation').addEventListener('click', () => {
     });
 });
 
+/**
+ * ViewAll knappen, ögon knappen längst upp till höger. Toggle visa fornlämningar eller inte, uppdatera ikonen, laddar om fornlämningar, rensar markörer och döljer popup
+ */
 document.getElementById('viewAll').addEventListener('click', () => {
 
     if (viewAll) {
@@ -85,7 +95,7 @@ document.getElementById('viewAll').addEventListener('click', () => {
 });
 
 /**
- * tar vad användaren sökt på, kör nominatim med flNameet för att hitta platsen - använder nomanitams angivna latitude och longitude för att ställa kartan på den platsen.
+ * tar vad användaren sökt på, kör nominatim med flNameet för att hitta platsen - använder nomanitams angivna latitude och longitude för att ställa kartan på den platsen, visar popup med infon och startar sökning efter fornlämningar.
  * @param {*} location - användarens sökning
  */
 async function findLocation(location) {
@@ -130,6 +140,9 @@ async function findLocation(location) {
     }
 }
 
+/**
+ * enter för sökfältet, tar input värdet och kallar findlocation med den angivna platsen
+ */
 document.getElementById('inputLocation').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
         e.preventDefault();
@@ -137,8 +150,11 @@ document.getElementById('inputLocation').addEventListener('keypress', function (
         findLocation(location);
     }
 });
+/** 
+ * Placera en markör där man klickar på kartan. Laddar, tar bort markörer, skapar ny markör, söker fornlämningar nära den platsen
+ * 
+*/
 
-//onclick på kartan
 map.on("click", function (e) {
     loading.style.display = 'flex';
     if (marker) {
@@ -157,6 +173,11 @@ map.on("click", function (e) {
     findUserLocation(e.latlng.lat, e.latlng.lng);
 });
 
+/**
+ * Hämtar information för angivna platsen, och visar den i popup
+ * @param {*} lat - latitude
+ * @param {*} lng - longitude
+ */
 async function findUserLocation(lat, lng) {
     try {
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
@@ -177,6 +198,11 @@ async function findUserLocation(lat, lng) {
 
 }
 
+/**
+ * Hämtar fornlämningar i ett område runt positionen, tar ut koordinater, namn, beskrivning och länk, skapar markörer baserat på vad det är.
+ * @param {*} lat -latitude
+ * @param {*} lng -longitude
+ */
 function findFL(lat, lng) {
 
     //definiera området runt (boundingbox)
