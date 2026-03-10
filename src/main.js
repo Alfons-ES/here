@@ -15,6 +15,7 @@ map.locate({
     setView: true,
     maxZoom: 12,
     enableHighAccuracy: true,
+    timeout: 5000
 
 });
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -42,6 +43,9 @@ map.on('locationfound', function (e) {
     findUserLocation(latlng.lat, latlng.lng);
 });
 
+map.on('locationerror', function (e) {
+    alert("Platsåtkomst nekad. Gå till inställningar -> webbläsare -> Plats och välj 'Fråga' eller 'Tillåt'.")
+});
 
 /**
  * userLocation knappen, gröna knappen längst upp till höger. Ladda, tar bort sök/klickmarkörer, dölj popup, Hitta användarens position och centrera där
