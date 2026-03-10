@@ -8,21 +8,22 @@ let userMarker = null;
 const popup = document.getElementById('popup')
 
 let viewAll = false;
+locate()
 
+function locate() {
+    //var är vi?
+    map.locate({
+        setView: true,
+        maxZoom: 12,
+        enableHighAccuracy: true,
+        timeout: 5000
 
-//var är vi?
-map.locate({
-    setView: true,
-    maxZoom: 12,
-    enableHighAccuracy: true,
-    timeout: 5000
-
-});
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(map);
-
+    });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+}
 
 
 /**
