@@ -10,6 +10,9 @@ const popup = document.getElementById('popup')
 let viewAll = false;
 locate()
 
+/**
+ * var är användaren, startar openstreetmap och lägger till kartan
+ */
 function locate() {
     //var är vi?
     map.locate({
